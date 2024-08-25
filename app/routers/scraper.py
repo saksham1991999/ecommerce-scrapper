@@ -9,6 +9,8 @@ from app.exceptions.scraper_exceptions import ScraperException
 from app.repositories.postgres_repository import PostgresRepository
 from app.services.notification_service import NotificationService
 from app.notifications.console_notifier import ConsoleNotifier
+from app.notifications.twilio_notifier import TwilioNotifier
+from app.notifications.email_notifier import EmailNotifier
 from app.cache.redis_cache import RedisCache
 from app.models.product import Product
 
@@ -23,7 +25,14 @@ async def get_scraper_service() -> ScraperService:
     await cache.initialize()
     caching_service = CachingService(cache)
     
-    notifiers: List[ConsoleNotifier] = [ConsoleNotifier()]
+    notifiers = []
+    if all([os.getenv(env_var) for env_var in ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_FROM_NUMBER', 'TWILIO_TO_NUMBER']]):
+        notifiers.append(TwilioNotifier())
+    if all([os.getenv(env_var) for env_var in ['EMAIL_SENDER', 'EMAIL_PASSWORD', 'EMAIL_RECEIVER']]):
+        notifiers.append(EmailNotifier())
+    if not notifiers:
+        notifiers.append(ConsoleNotifier())
+    
     notification_service = NotificationService(notifiers)
     
     return ScraperService(storage_service, caching_service, notification_service)
