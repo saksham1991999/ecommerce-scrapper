@@ -23,7 +23,6 @@ from app.utils.image_downloader import download_image
 
 logger = logging.getLogger(__name__)
 
-
 class Scraper:
     def __init__(self, proxy: Optional[str] = None, image_save_dir: str = "storage/images"):
         self.proxy = proxy
@@ -32,14 +31,18 @@ class Scraper:
         self.ssl_context = ssl.create_default_context()
         self.ssl_context.check_hostname = False
         self.ssl_context.verify_mode = ssl.CERT_NONE
+        logger.info(f"Scraper initialized with proxy: {proxy}, image_save_dir: {image_save_dir}")
 
     async def fetch_page(self, url: str) -> str:
         """Fetch the HTML content of a given URL."""
+        logger.info(f"Fetching page: {url}")
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(url, proxy=self.proxy, timeout=10, ssl=self.ssl_context) as response:
                     response.raise_for_status()
-                    return await response.text()
+                    content = await response.text()
+                    logger.info(f"Successfully fetched page: {url}")
+                    return content
             except aiohttp.ClientError as e:
                 logger.error(f"Error fetching page {url}: {str(e)}")
                 raise NetworkException(f"Failed to fetch page: {str(e)}") from e
@@ -73,6 +76,7 @@ class Scraper:
             parsed_url = urlparse(TARGET_URL)
             source = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
+            logger.info(f"Parsed product: {product_id}, {product_title}, {product_price}, {local_image_path}")
             return Product(
                 id=f"{source}_{product_id}",
                 source=source,
@@ -120,6 +124,7 @@ class Scraper:
         all_products: List[Product] = []
         page_count = 0
 
+        logger.info(f"Starting catalog scrape with page_limit: {page_limit}")
         while url and (page_limit is None or page_count < page_limit):
             try:
                 logger.info(f"Scraping page {page_count + 1}: {url}")
@@ -142,11 +147,14 @@ class Scraper:
             soup = BeautifulSoup(html, 'html.parser')
             next_page = soup.select_one('.next.page-numbers')
             if next_page and 'href' in next_page.attrs:
-                return urljoin(current_url, next_page['href'])
+                next_url = urljoin(current_url, next_page['href'])
+                logger.info(f"Found next page URL: {next_url}")
+                return next_url
+            logger.info("No next page found")
             return None
         except Exception as e:
+            logger.error(f"Error getting next page URL: {str(e)}")
             raise PaginationException(f"Failed to get next page URL: {str(e)}") from e
-
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
@@ -163,7 +171,6 @@ def main() -> None:
             logger.info("---")
     except ScraperException as e:
         logger.error(f"Scraping failed: {str(e)}")
-
 
 if __name__ == "__main__":
     main()

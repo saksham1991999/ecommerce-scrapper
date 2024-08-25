@@ -61,3 +61,6 @@ aiosmtplib
 
 # Retry logic
 tenacity
+
+# Twilio
+twilio
