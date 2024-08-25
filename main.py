@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from app.routers import scraper
 from app.middleware.auth_middleware import AuthMiddleware
 from app.cache.redis_cache import RedisCache
+from app.models.db_models import Base
+from sqlalchemy.ext.asyncio import create_async_engine
 
 app = FastAPI()
 
@@ -17,6 +19,12 @@ async def startup_event():
     os.makedirs("storage", exist_ok=True)
     app.state.redis_cache = RedisCache()
     await app.state.redis_cache.initialize()
+
+    # Initialize database
+    db_url = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@postgres/scraper_db")
+    engine = create_async_engine(db_url, echo=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 @app.on_event("shutdown")
 async def shutdown_event():

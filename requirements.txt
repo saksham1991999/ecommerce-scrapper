@@ -17,5 +17,47 @@ lxml
 cachetools
 aioredis
 aiofiles
+asyncpg
+alembic
+psycopg2-binary
 
-# tenacity
+# Database
+sqlalchemy[asyncio]
+
+# Async support
+aiofiles
+aiohttp
+aioredis
+
+# FastAPI and web
+fastapi
+uvicorn[standard]
+
+# Data parsing and validation
+pydantic
+pydantic-settings
+
+# Testing
+pytest
+httpx
+
+# Image processing
+pillow
+
+# XML parsing
+lxml
+
+# Caching
+cachetools
+
+# Environment variables
+python-dotenv
+
+# YAML support
+pyyaml
+
+# Email
+aiosmtplib
+
+# Retry logic
+tenacity

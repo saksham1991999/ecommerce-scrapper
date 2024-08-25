@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from app.schemas.scraper_schemas import ScraperRequest, ScraperResponse
@@ -5,7 +6,7 @@ from app.services.scraper_service import ScraperService
 from app.services.storage_service import StorageService
 from app.services.caching_service import CachingService
 from app.exceptions.scraper_exceptions import ScraperException
-from app.repositories.json_file_repository import JsonFileRepository
+from app.repositories.postgres_repository import PostgresRepository
 from app.services.notification_service import NotificationService
 from app.notifications.console_notifier import ConsoleNotifier
 from app.cache.redis_cache import RedisCache
@@ -14,7 +15,8 @@ from app.models.product import Product
 router = APIRouter()
 
 async def get_scraper_service() -> ScraperService:
-    repository = JsonFileRepository()
+    db_url = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@postgres/scraper_db")
+    repository = PostgresRepository(db_url)
     storage_service = StorageService(repository)
     
     cache = RedisCache()
