@@ -1,11 +1,12 @@
 import aioredis
 from typing import Optional
 import os
+from app.constants import REDIS_URL, PRODUCT_PRICE_CACHE_KEY
 
 class RedisCache:
     def __init__(self):
         self.redis = None
-        self.redis_url = os.getenv("REDIS_URL", "redis://localhost")
+        self.redis_url = REDIS_URL
 
     async def initialize(self):
         if self.redis is None:
@@ -13,11 +14,11 @@ class RedisCache:
 
     async def get_product_price(self, product_id: str) -> Optional[str]:
         await self.initialize()
-        return await self.redis.get(f"product_price:{product_id}")
+        return await self.redis.get(PRODUCT_PRICE_CACHE_KEY.format(product_id))
 
     async def set_product_price(self, product_id: str, price: str) -> None:
         await self.initialize()
-        await self.redis.set(f"product_price:{product_id}", price)
+        await self.redis.set(PRODUCT_PRICE_CACHE_KEY.format(product_id), price)
 
     async def close(self) -> None:
         if self.redis:

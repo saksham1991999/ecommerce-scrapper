@@ -2,15 +2,16 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from app.constants import EMAIL_SENDER, EMAIL_PASSWORD, EMAIL_RECEIVER, SMTP_SERVER, SMTP_PORT
 from app.notifications.base_notifier import BaseNotifier
 
 class EmailNotifier(BaseNotifier):
     def __init__(self):
-        self.smtp_server = "smtp.gmail.com"
-        self.port = 587  # For starttls
-        self.sender_email = os.getenv("EMAIL_SENDER")
-        self.password = os.getenv("EMAIL_PASSWORD")
-        self.receiver_email = os.getenv("EMAIL_RECEIVER")
+        self.smtp_server = SMTP_SERVER
+        self.port = SMTP_PORT
+        self.sender_email = EMAIL_SENDER
+        self.password = EMAIL_PASSWORD
+        self.receiver_email = EMAIL_RECEIVER
 
     async def notify(self, message: str) -> None:
         msg = MIMEMultipart()

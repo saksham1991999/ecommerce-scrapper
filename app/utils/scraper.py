@@ -8,7 +8,7 @@ import os
 import aiohttp
 from bs4 import BeautifulSoup, Tag
 
-from app.constants import TARGET_URL
+from app.constants import TARGET_URL, IMAGE_SAVE_DIR, PRODUCT_CLASS, PRODUCT_TITLE_CLASS, PRODUCT_PRICE_CLASS, PRODUCT_IMAGE_CLASS, NEXT_PAGE_CLASS, MAX_RETRY_ATTEMPTS, RETRY_DELAY
 from app.exceptions.scraper_exceptions import (
     ScraperException,
     NetworkException,
@@ -24,7 +24,7 @@ from app.utils.image_downloader import download_image
 logger = logging.getLogger(__name__)
 
 class Scraper:
-    def __init__(self, proxy: Optional[str] = None, image_save_dir: str = "storage/images"):
+    def __init__(self, proxy: Optional[str] = None, image_save_dir: str = IMAGE_SAVE_DIR):
         self.proxy = proxy
         self.image_save_dir = image_save_dir
         # Create a custom SSL context that doesn't verify certificates
@@ -94,13 +94,13 @@ class Scraper:
             logger.error(f"Product element: {product_element}")
             raise DataExtractionException(f"Unexpected error parsing product: {str(e)}") from e
 
-    @retry_async(max_attempts=3, delay=5)
+    @retry_async(max_attempts=MAX_RETRY_ATTEMPTS, delay=RETRY_DELAY)
     async def scrape_page(self, url: str) -> List[Product]:
         """Scrape a single page and return a list of Product objects."""
         try:
             html = await self.fetch_page(url)
             soup = BeautifulSoup(html, 'html.parser')
-            product_elements = soup.find_all('li', class_='product')
+            product_elements = soup.find_all('li', class_=PRODUCT_CLASS)
             
             products = []
             for element in product_elements:
@@ -117,7 +117,7 @@ class Scraper:
             logger.error(f"Error parsing page {url}: {str(e)}")
             raise
 
-    @retry_async(max_attempts=3, delay=5)
+    @retry_async(max_attempts=MAX_RETRY_ATTEMPTS, delay=RETRY_DELAY)
     async def scrape_catalog(self, page_limit: Optional[int] = None) -> List[Product]:
         """Scrape the entire catalog or up to the specified page limit."""
         url = TARGET_URL
@@ -145,7 +145,7 @@ class Scraper:
         """Get the URL of the next page, if it exists."""
         try:
             soup = BeautifulSoup(html, 'html.parser')
-            next_page = soup.select_one('.next.page-numbers')
+            next_page = soup.select_one(f'.{NEXT_PAGE_CLASS}')
             if next_page and 'href' in next_page.attrs:
                 next_url = urljoin(current_url, next_page['href'])
                 logger.info(f"Found next page URL: {next_url}")
@@ -155,22 +155,3 @@ class Scraper:
         except Exception as e:
             logger.error(f"Error getting next page URL: {str(e)}")
             raise PaginationException(f"Failed to get next page URL: {str(e)}") from e
-
-def main() -> None:
-    logging.basicConfig(level=logging.INFO)
-    try:
-        scraper = Scraper()
-        products = scraper.scrape_catalog(page_limit=5)
-        
-        logger.info(f"Total products scraped: {len(products)}")
-        for product in products[:5]:  # Print details of first 5 products
-            logger.info(f"Product ID: {product.id}")
-            logger.info(f"Title: {product.product_title}")
-            logger.info(f"Price: ${product.product_price}")
-            logger.info(f"Image: {product.path_to_image}")
-            logger.info("---")
-    except ScraperException as e:
-        logger.error(f"Scraping failed: {str(e)}")
-
-if __name__ == "__main__":
-    main()

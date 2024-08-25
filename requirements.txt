@@ -20,6 +20,7 @@ aiofiles
 asyncpg
 alembic
 psycopg2-binary
+starlette
 
 # Database
 sqlalchemy[asyncio]
