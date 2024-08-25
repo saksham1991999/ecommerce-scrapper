@@ -15,11 +15,11 @@ class Product(BaseModel):
     def validate_price(cls, v):
         return Decimal(round(v, 2))
 
-    # @validator('path_to_image')
-    # def validate_image_path(cls, v):
-    #     if not os.path.isfile(v):
-    #         raise ValueError(f"Image file does not exist: {v}")
-    #     return v
+    @validator('path_to_image')
+    def validate_image_path(cls, v):
+        if not os.path.isfile(v):
+            raise ValueError(f"Image file does not exist: {v}")
+        return v
 
     class Config:
         json_encoders = {Decimal: str}

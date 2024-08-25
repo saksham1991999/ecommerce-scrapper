@@ -1,4 +1,5 @@
 import logging
+import ssl
 from decimal import Decimal
 from typing import List, Optional
 from urllib.parse import urljoin, urlparse
@@ -27,12 +28,16 @@ class Scraper:
     def __init__(self, proxy: Optional[str] = None, image_save_dir: str = "storage/images"):
         self.proxy = proxy
         self.image_save_dir = image_save_dir
+        # Create a custom SSL context that doesn't verify certificates
+        self.ssl_context = ssl.create_default_context()
+        self.ssl_context.check_hostname = False
+        self.ssl_context.verify_mode = ssl.CERT_NONE
 
     async def fetch_page(self, url: str) -> str:
         """Fetch the HTML content of a given URL."""
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get(url, proxy=self.proxy, timeout=10) as response:
+                async with session.get(url, proxy=self.proxy, timeout=10, ssl=self.ssl_context) as response:
                     response.raise_for_status()
                     return await response.text()
             except aiohttp.ClientError as e:

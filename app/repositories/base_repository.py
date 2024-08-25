@@ -8,5 +8,9 @@ class BaseRepository(ABC):
         pass
 
     @abstractmethod
+    async def save_product(self, product: Product) -> None:
+        pass
+
+    @abstractmethod
     async def get_all_products(self) -> List[Product]:
         pass

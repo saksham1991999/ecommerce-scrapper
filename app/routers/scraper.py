@@ -6,14 +6,18 @@ from app.exceptions.scraper_exceptions import ScraperException
 from app.repositories.json_file_repository import JsonFileRepository
 from app.services.notification_service import NotificationService
 from app.notifications.console_notifier import ConsoleNotifier
+from app.cache.redis_cache import RedisCache
+from app.models.product import Product
 
 router = APIRouter()
 
-def get_scraper_service() -> ScraperService:
+async def get_scraper_service() -> ScraperService:
     repository: JsonFileRepository = JsonFileRepository()
     notifiers: List[ConsoleNotifier] = [ConsoleNotifier()]
     notification_service: NotificationService = NotificationService(notifiers)
-    return ScraperService(repository, notification_service)
+    cache: RedisCache = RedisCache()
+    await cache.initialize()
+    return ScraperService(repository, notification_service, cache)
 
 @router.post("/scrape", response_model=ScraperResponse)
 async def scrape(
@@ -21,10 +25,12 @@ async def scrape(
     scraper_service: ScraperService = Depends(get_scraper_service)
 ) -> ScraperResponse:
     try:
-        products: List[Product] = await scraper_service.scrape_catalog(page_limit=request.page_limit)
+        all_products, updated_products = await scraper_service.scrape_catalog(page_limit=request.page_limit)
         return ScraperResponse(
             status="success",
-            data=[product.dict() for product in products]
+            total_scraped=len(all_products),
+            total_updated=len(updated_products),
+            updated_products=[product.dict() for product in updated_products]
         )
     except ScraperException as e:
         raise HTTPException(status_code=500, detail=str(e))

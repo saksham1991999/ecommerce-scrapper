@@ -15,6 +15,7 @@ aiosmtplib
 pillow
 lxml
 cachetools
-psycopg2
+aioredis
+aiofiles
 
 # tenacity
