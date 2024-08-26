@@ -85,7 +85,7 @@ This project is an asynchronous web scraper built with FastAPI, designed to extr
    ```
    Make sure to replace the placeholder values with your actual configuration details.
 
-   Note: A default API key is set in `app/constants.py` for quick setup. You can use this key to make requests without setting your own.
+   Note: A default API key is set in `docker-compose.yml` for quick setup. You can use this key to make requests without setting your own.
 
 2. The `TARGET_URL` in `app/constants.py` is set to "https://dentalstall.com/shop/".
 
