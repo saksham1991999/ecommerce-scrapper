@@ -1,14 +1,14 @@
 import os
 
 # API Configuration
-API_KEY = os.getenv("API_KEY", "51Nj8UxKGLqm7Xt9Aw3RzBvF8qY6cJpL2tMn7DkZxC9Hs5EoVfGjTy2Lm1Rk3Pb8N")
+API_KEY = os.getenv("API_KEY")
 API_KEY_NAME = "X-API-Key"
 
 # Database Configuration
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@postgres/scraper_db")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Redis Configuration
-REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
+REDIS_URL = os.getenv("REDIS_URL")
 
 # Twilio Configuration
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
