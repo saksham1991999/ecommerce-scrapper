@@ -1,0 +1,15 @@
+[flake8]
+max-line-length = 120
+exclude =
+    .git,
+    __pycache__,
+    venv,
+    .venv,
+    build,
+    dist
+ignore =
+    E203,  # whitespace before ':' (black formatter compatibility)
+    W503,  # line break before binary operator (black formatter compatibility)
+    F401,  # imported but unused (temporary, remove this if you want to enforce)
+per-file-ignores =
+    __init__.py:F401

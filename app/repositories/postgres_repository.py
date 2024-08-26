@@ -1,20 +1,43 @@
 from typing import List
-from sqlalchemy.ext.asyncio import AsyncSession
+
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.future import select
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import create_async_engine
+
+from app.models.db_models import ProductDB
 from app.models.product import Product
 from app.repositories.base_repository import BaseRepository
-from app.models.db_models import ProductDB
+
 
 class PostgresRepository(BaseRepository):
-    def __init__(self, db_url: str):
+    """
+    PostgresRepository is responsible for managing product data in a PostgreSQL database.
+
+    This class implements the methods defined in the BaseRepository for saving and retrieving products.
+    """
+
+    def __init__(self, db_url: str) -> None:
+        """
+        Initializes the PostgresRepository with the database URL.
+
+        Args:
+            db_url (str): The database connection URL.
+        """
         self.engine = create_async_engine(db_url, echo=True)
         self.async_session = sessionmaker(
             self.engine, class_=AsyncSession, expire_on_commit=False
         )
 
     async def save_product(self, product: Product) -> None:
+        """
+        Saves a single product to the PostgreSQL database.
+
+        Args:
+            product (Product): The Product instance to be saved.
+
+        Raises:
+            Exception: If there is an error during the save operation.
+        """
         async with self.async_session() as session:
             db_product = ProductDB(
                 id=product.id,
@@ -28,6 +51,15 @@ class PostgresRepository(BaseRepository):
             await session.commit()
 
     async def save_products(self, products: List[Product]) -> None:
+        """
+        Saves a list of products to the PostgreSQL database.
+
+        Args:
+            products (List[Product]): A list of Product instances to be saved.
+
+        Raises:
+            Exception: If there is an error during the save operation.
+        """
         async with self.async_session() as session:
             db_products = [
                 ProductDB(
@@ -44,6 +76,15 @@ class PostgresRepository(BaseRepository):
             await session.commit()
 
     async def get_all_products(self) -> List[Product]:
+        """
+        Retrieves all products from the PostgreSQL database.
+
+        Returns:
+            List[Product]: A list of Product instances retrieved from the database.
+
+        Raises:
+            Exception: If there is an error during the retrieval operation.
+        """
         async with self.async_session() as session:
             result = await session.execute(select(ProductDB))
             db_products = result.scalars().all()

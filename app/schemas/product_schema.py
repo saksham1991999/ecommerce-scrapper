@@ -1,10 +1,25 @@
-from pydantic import BaseModel, Field
-from typing import Optional
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class ProductSchema(BaseModel):
+    """
+    Pydantic model representing a product.
+
+    Attributes:
+        id (str): Unique identifier constructed using source and source_id.
+        source (str): Complete domain of the URL.
+        source_id (str): ID received from scraping.
+        product_title (str): Title of the product.
+        product_price (Decimal): Price of the product.
+        path_to_image (str): Path to the product image on local storage.
+        created_at (datetime): Timestamp of when the product was first scraped.
+        updated_at (datetime): Timestamp of when the product was last updated.
+    """
+
     id: str = Field(..., description="Unique identifier constructed using source and source_id")
     source: str = Field(..., description="Complete domain of the URL")
     source_id: str = Field(..., description="ID received from scraping")
@@ -27,21 +42,3 @@ class ProductSchema(BaseModel):
                 "updated_at": "2023-04-01T12:00:00"
             }
         }
-
-
-class ProductCreateSchema(BaseModel):
-    source: str = Field(..., description="Complete domain of the URL")
-    source_id: str = Field(..., description="ID received from scraping")
-    product_title: str = Field(..., description="Title of the product")
-    product_price: Decimal = Field(..., description="Price of the product")
-    path_to_image: str = Field(..., description="Path to the product image on local storage")
-
-
-class ProductUpdateSchema(BaseModel):
-    product_title: Optional[str] = Field(None, description="Title of the product")
-    product_price: Optional[Decimal] = Field(None, description="Price of the product")
-    path_to_image: Optional[str] = Field(None, description="Path to the product image on local storage")
-
-
-class ProductResponseSchema(ProductSchema):
-    pass
